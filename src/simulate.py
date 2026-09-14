@@ -7,13 +7,14 @@ import time
 import argparse
 import camb
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Generate Tau Sims, CMB*exp(-τ) sims, and CMB*exp(-τ) + WN Sims')
-parser.add_argument("--nsims", type=int, default=20, help="Number of simulations to generate.")
-parser.add_argument("--CMB", action='store_true',default=True,help='If CMB, then make CMB*exp(-τ) sims.')
+parser.add_argument("--nsims", type=int, default=1, help="Number of simulations to generate.")
+parser.add_argument("--CMB", action='store_true',default=True,help='If true, then make CMB*exp(-τ) sims.')
 parser.add_argument("--noise", action='store_true',default=True,help='If true, then make CMB*exp(-τ) + WN Sims.')
 parser.add_argument("--noiselevel", type=float, default=15,help="Noiselevel in µK'")
-parser.add_argument("--startind", type=int, default=1, help="Starting index for the read and new sims.")
+parser.add_argument("--startind", type=int, default=1, help="First new simulation index you want to make.")
 parser.add_argument("--lmax", type=int, default=4000, help="What is the maximum multipole you want to generate these simulations to?")
 parser.add_argument("--savepath", type=str, help="Where are you saving your simulations?")
 
@@ -26,7 +27,10 @@ l = np.linspace(0,lmax,lmax+1)
 
 noiselevel=args.noiselevel
 
-sim_idx = args.startind
+start_ind = args.startind
+
+save_path = Path(args.savepath)
+save_path.mkdir(parents=True, exist_ok=True)
 
 ###### get map geometry for 2 arcmin resolution ########
 
@@ -62,7 +66,10 @@ cl_tt = cmb_ps[:lmax + 1, 0]
     minimum halo mass required to produce ionizing radiation, M_min = 10^8 M_sun
     mean-free path of ionizing photons, λ = 3 Mpc/h"""
 
-tau_ells, cl_tau = np.loadtxt("cmb-screening-demo/data/cl_tau.txt", unpack=True, skiprows=1)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+TAU_PATH = REPO_ROOT / "data" / "cl_tau.txt"
+
+tau_ells, cl_tau = np.loadtxt(TAU_PATH, unpack=True, skiprows=1)
 
 mask = tau_ells <= lmax
 
@@ -82,14 +89,17 @@ cl_tau_full[tau_ells_use] = cl_tau_use
 
 ################ make simulations ad save ################# 
 
-for i in range(nsims):
+for i in range(start_ind, start_ind + nsims):
+
+    sim_idx = f"{i:05d}"
+
     # make tau simulation from fiducial power spectrum and save it to disk for our check later
     taualm1 = cs.rand_alm(cl_tau, lmax=lmax)
     tauzeros = np.zeros_like(taualm1)
 
     taualm = np.array([taualm1,tauzeros,tauzeros])
 
-    hp.write_alm(save_path + f"tau_alm_{istr}.fits",
+    hp.write_alm(save_path / f"tau_alm_{sim_idx}.fits",
         taualm,
         overwrite=True)
     
@@ -124,6 +134,9 @@ for i in range(nsims):
 
     print("shape of modulated, noisy CMB alms (should be (3,almlen): " + str(np.shape(modcmb_noisy_alm)))
 
-    hp.write_alm(save_path + f"modulatedCMB_noise{noiselevel}_alm_{istr}.fits",
+    # Save simulated screened + noisy CMB alm
+    hp.write_alm(
+        save_path / f"modulated_cmb_alm_{sim_idx}.fits",
         modcmb_noisy_alm,
-        overwrite=True)
+        overwrite=True
+    )
