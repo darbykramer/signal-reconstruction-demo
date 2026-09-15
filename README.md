@@ -1,4 +1,4 @@
-# Weak signal reconstruction demo. 
+# Demonstration of weak signal reconstruction with the cosmic microwave background
 
 A simulation-based demonstration of weak-signal reconstruction using CMB patchy screening as a test case.
 This project generates simulated CMB data with a known optical-depth fluctuation field and reconstructs the injected signal using a quadratic estimator.
