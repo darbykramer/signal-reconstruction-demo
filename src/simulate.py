@@ -1,6 +1,5 @@
 import numpy as np
 from orphics import maps
-from pixell import enmap, utils
 from pixell import curvedsky as cs
 import healpy as hp
 import time
@@ -15,8 +14,9 @@ parser.add_argument("--CMB", action='store_true',default=True,help='If true, the
 parser.add_argument("--noise", action='store_true',default=True,help='If true, then make CMB*exp(-τ) + WN Sims.')
 parser.add_argument("--noiselevel", type=float, default=15,help="Noiselevel in µK'")
 parser.add_argument("--startind", type=int, default=1, help="First new simulation index you want to make.")
-parser.add_argument("--lmax", type=int, default=4000, help="What is the maximum multipole you want to generate these simulations to?")
+parser.add_argument("--lmax", type=int, default=3000, help="What is the maximum multipole you want to generate these simulations to?")
 parser.add_argument("--savepath", type=str, help="Where are you saving your simulations?")
+parser.add_argument("--nside", type=str, default=2048, help="What healpix resolution would you like to use?")
 
 args = parser.parse_args()
 
@@ -32,15 +32,7 @@ start_ind = args.startind
 save_path = Path(args.savepath)
 save_path.mkdir(parents=True, exist_ok=True)
 
-###### get map geometry for 2 arcmin resolution ########
-
-res = 2.0 * utils.arcmin
-box = np.deg2rad([[-10, -10], [10, 10]])
-
-shape, wcs = enmap.geometry(pos=box, res=res)
-
-# add 3 to shape. This is necessary for the falafel pipeline. 
-shape = (3,) + shape
+nside = args.nside
 
 ########### load up CMB power spectrum from CAMB #################
 
@@ -87,14 +79,14 @@ cl_tau_full[tau_ells_use] = cl_tau_use
 # plt.xlabel(r"$\ell$", fontsize=17)
 # plt.ylabel(r"$C_\ell^{\tau \tau}$", fontsize=15)
 
-################ make simulations ad save ################# 
+################ make simulations and save ################# 
 
 for i in range(start_ind, start_ind + nsims):
 
     sim_idx = f"{i:05d}"
 
     # make tau simulation from fiducial power spectrum and save it to disk for our check later
-    taualm1 = cs.rand_alm(cl_tau, lmax=lmax)
+    taualm1 = cs.rand_alm(cl_tau_full, lmax=lmax)
     tauzeros = np.zeros_like(taualm1)
 
     taualm = np.array([taualm1,tauzeros,tauzeros])
@@ -112,11 +104,14 @@ for i in range(start_ind, start_ind + nsims):
     assert len(cmbalm)==3
 
     # move to real space to do the modulation so no convolutions
-    cmbmap = cs.alm2map(cmbalm, enmap.ndmap(np.zeros(shape),wcs))
-    taumap = cs.alm2map(taualm, enmap.ndmap(np.zeros(shape),wcs))
+    nside = 2048 # using healpix pixelization on the full skys
 
-    modcmb_map = cmbmap*np.exp(-taumap)
-    modcmb_alm = cs.map2alm(modcmb_map,lmax=lmax)
+    cmbmap = hp.alm2map(cmbalm, nside=nside)
+    taumap = hp.alm2map(taualm, nside=nside)
+
+    modcmb_map = cmbmap * np.exp(-taumap)
+    modcmb_alm = hp.map2alm(modcmb_map, lmax=lmax)
+
     assert len(modcmb_alm)==3
 
     # make CMB sim, with white noise added
