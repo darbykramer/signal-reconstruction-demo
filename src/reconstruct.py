@@ -5,7 +5,7 @@ import camb
 import argparse
 
 parser = argparse.ArgumentParser(description='Reconstruct tau signal from inputted CMB sims.')
-parser.add_argument("--simpath", type=str, default="/home/darbyk12/SCRATCH/")
+parser.add_argument("--simpath", type=str, default=None)
 parser.add_argument("--lmax", type=str, default=3000, help="What is the largest multipole ell you want to use in the reconstruction?")
 parser.add_argument("--lmin", type=str, default=600, help="What is the smallest multipole ell you want to use in the reconstruction?")
 parser.add_argument("--rlmax", type=str, default=3000, help="What is the largest multipole L you want to reconstruct?")
