@@ -1,3 +1,4 @@
+
 import numpy as np
 from orphics import maps
 from pixell import curvedsky as cs
@@ -16,7 +17,7 @@ parser.add_argument("--noiselevel", type=float, default=15,help="Noiselevel in Â
 parser.add_argument("--startind", type=int, default=1, help="First new simulation index you want to make.")
 parser.add_argument("--lmax", type=int, default=3000, help="What is the maximum multipole you want to generate these simulations to?")
 parser.add_argument("--savepath", type=str, help="Where are you saving your simulations?")
-parser.add_argument("--nside", type=str, default=2048, help="What healpix resolution would you like to use?")
+parser.add_argument("--nside", type=int, default=2048, help="What healpix resolution would you like to use?")
 
 args = parser.parse_args()
 
@@ -86,33 +87,24 @@ for i in range(start_ind, start_ind + nsims):
     sim_idx = f"{i:05d}"
 
     # make tau simulation from fiducial power spectrum and save it to disk for our check later
-    taualm1 = cs.rand_alm(cl_tau_full, lmax=lmax)
-    tauzeros = np.zeros_like(taualm1)
-
-    taualm = np.array([taualm1,tauzeros,tauzeros])
+    taualm = cs.rand_alm(cl_tau_full, lmax=lmax)
 
     hp.write_alm(save_path / f"tau_alm_{sim_idx}.fits",
         taualm,
         overwrite=True)
     
     # make CMB sim, one TT and blank E and B
-    cmbalm1 = cs.rand_alm(cl_tt, lmax=lmax)
-    cmbzeros = np.zeros_like(cmbalm1)
-
-    cmbalm = np.array([cmbalm1, cmbzeros, cmbzeros])
+    cmbalm = cs.rand_alm(cl_tt, lmax=lmax)
     
-    assert len(cmbalm)==3
-
-    # move to real space to do the modulation so no convolutions
-    nside = 2048 # using healpix pixelization on the full skys
-
+    # move to real space to do the modulation so we don't need to convolve
     cmbmap = hp.alm2map(cmbalm, nside=nside)
     taumap = hp.alm2map(taualm, nside=nside)
 
+    ####### Mod_T = T(n) * exp(-tau(n)) ##### 
     modcmb_map = cmbmap * np.exp(-taumap)
-    modcmb_alm = hp.map2alm(modcmb_map, lmax=lmax)
+    #########################################
 
-    assert len(modcmb_alm)==3
+    modcmb_alm = hp.map2alm(modcmb_map, lmax=lmax)
 
     # make CMB sim, with white noise added
     # making 1 noise realization per simulation 
@@ -120,14 +112,9 @@ for i in range(start_ind, start_ind + nsims):
     # N_l = (Delta_T * pi / (180 * 60))^2 / B_l^2
     noise_ps = (noiselevel * np.pi / (180 * 60))**2 / maps.gauss_beam(l, 1.4)**2
 
-    onesarray = np.ones(hp.Alm.getsize(lmax))
-    three_onesarray = (onesarray,onesarray,onesarray)
-    nalm = cs.rand_alm(noise_ps,lmax=lmax)*three_onesarray
+    nalm = cs.rand_alm(noise_ps,lmax=lmax)
     
-    print("len nalm = "+str(len(nalm)))
     modcmb_noisy_alm = np.add(modcmb_alm,nalm)
-
-    print("shape of modulated, noisy CMB alms (should be (3,almlen): " + str(np.shape(modcmb_noisy_alm)))
 
     # Save simulated screened + noisy CMB alm
     hp.write_alm(

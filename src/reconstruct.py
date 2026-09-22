@@ -1,16 +1,17 @@
 import numpy as np
 import healpy as hp
 from pixell import curvedsky as cs
+from tempura.pytempura.norm import get_norms
 import camb
 import argparse
 
 parser = argparse.ArgumentParser(description='Reconstruct tau signal from inputted CMB sims.')
 parser.add_argument("--simpath", type=str, default=None)
-parser.add_argument("--lmax", type=str, default=3000, help="What is the largest multipole ell you want to use in the reconstruction?")
-parser.add_argument("--lmin", type=str, default=600, help="What is the smallest multipole ell you want to use in the reconstruction?")
-parser.add_argument("--rlmax", type=str, default=3000, help="What is the largest multipole L you want to reconstruct?")
-parser.add_argument("--rlmin", type=str, default=600, help="What is the lowest multipole L you want to reconstruct?")
-parser.add_argument("--nside", type=str, default=2048, help="What healpix resolution would you like to use?")
+parser.add_argument("--lmax", type=int, default=3000, help="What is the largest multipole ell you want to use in the reconstruction?")
+parser.add_argument("--lmin", type=int, default=600, help="What is the smallest multipole ell you want to use in the reconstruction?")
+parser.add_argument("--rlmax", type=int, default=3000, help="What is the largest multipole L you want to reconstruct?")
+parser.add_argument("--rlmin", type=int, default=600, help="What is the lowest multipole L you want to reconstruct?")
+parser.add_argument("--nside", type=int, default=2048, help="What healpix resolution would you like to use?")
 
 args = parser.parse_args()
 
@@ -49,12 +50,9 @@ cl_te = ucl[:lmax+1, 3]
 
 #### Load in screened CMB simulation ########################################################
 
-a = hp.read_alm(
-    sim_path + "modulated_cmb_alm_00001.fits",
-    hdu=(1,2,3)
+alm = hp.read_alm(
+    sim_path + "modulated_cmb_alm_00001.fits"
 )
-
-alm = a[0]
 
 cl_tot = cs.alm2cl(alm)
 
@@ -72,15 +70,11 @@ walm = hp.almxfl(alm, wfilt) # apply Wiener filter
 fmap = hp.alm2map(falm, nside=nside) # inverse SHT the IV filtered alms to real space
 wmap = hp.alm2map(walm, nside=nside) # inverse SHT the Wiener-filtered alms to real space
 
-reconalm = hp.map2alm(fmap * wmap, lmax=mlmax) # multiply the IV and Wiener-filtered maps together
+recon_alm = hp.map2alm(fmap * wmap, lmax=mlmax) # multiply the IV and Wiener-filtered maps together
 
 # this is now an un-normalized screening map that contains our inputted signal.
 
-
 ### Normalization #################################################################################
-
-#import norm file
-from tempura.pytempura.norm import get_norms
 
 cl = np.zeros((4,lmax+1)) # TT, EE, BB, TE
 
@@ -96,8 +90,7 @@ Aestnoise = get_norms(['tt'],ucls,oclsnoise,rlmin,rlmax,coupling=["tau"])
 
 ### Apply Normalization ###################################################
 
-newalm = reconalm
-final_alm = hp.almxfl(newalm, Aestnoise['tt'])
+final_alm = hp.almxfl(recon_alm, Aestnoise['tt'])
 
 #### Save alm ########
 
@@ -106,4 +99,3 @@ hp.write_alm(
     final_alm,
     overwrite=True
 )
-
