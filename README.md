@@ -11,4 +11,4 @@ This project generates simulated CMB data with a known optical-depth fluctuation
 3.) Check that the result contains the desired input signal by taking the cross-power spectrum of the input signal and output map
 
 # Status
-Pipeline functional for all three stages in simulate.py, reconstruct.py, and plotting.py. Just need cleanup and documentation. May add MPI functionality.
+Debugging pipeline for a fresh dependency install. Having tempura version mismatch issues.
