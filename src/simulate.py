@@ -110,7 +110,12 @@ for i in range(start_ind, start_ind + nsims):
     # making 1 noise realization per simulation 
 
     # N_l = (Delta_T * pi / (180 * 60))^2 / B_l^2
-    noise_ps = (noiselevel * np.pi / (180 * 60))**2 / utils.gauss_beam(l, 1.4)**2
+    
+    beam_sigma = np.deg2rad(1.4 / 60) / np.sqrt(8 * np.log(2))
+    beam = np.exp(-0.5 * l * (l + 1) * beam_sigma**2)
+
+    noise_ps = (noiselevel * np.pi / (180 * 60))**2 / beam**2
+
 
     nalm = cs.rand_alm(noise_ps,lmax=lmax)
     
