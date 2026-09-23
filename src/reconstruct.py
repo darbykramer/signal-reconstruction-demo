@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 from pixell import curvedsky as cs
-from tempura.pytempura.norm import get_norms
+from pytempura.norm import get_norms
 import camb
 import argparse
 
