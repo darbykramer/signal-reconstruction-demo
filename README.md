@@ -11,4 +11,18 @@ This project generates simulated CMB data with a known optical-depth fluctuation
 3.) Check that the result contains the desired input signal by taking the cross-power spectrum of the input signal and output map
 
 # Status
-Debugging pipeline for a fresh dependency install. Having tempura version mismatch issues.
+Working end-to-end from base installs in requirements.txt. May add MPI capability soon.
+
+# Example execution sequence:
+
+* I recommend making a new python virtual environment, then activate it and clone the repository *
+
+cd signal-reconstruction-demo
+
+pip install -r requirements.txt
+
+python simulate.py --savepath ../output/ --noiselevel 10 --nsims 1
+
+python reconstruct.py --simpath ../output/
+
+python plotting.py --simpath ../output/ --savepath ../output/
