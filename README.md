@@ -21,6 +21,8 @@ cd signal-reconstruction-demo
 
 pip install -r requirements.txt
 
+cd src
+
 python simulate.py --savepath ../output/ --noiselevel 10 --nsims 1
 
 python reconstruct.py --simpath ../output/
