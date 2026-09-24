@@ -18,14 +18,17 @@ The following plots illustrate the simulated CMB data, reconstructed optical-dep
 ### Input Simulation
 
 <img src="output/inputmap.png" width="500">
+The simulation stage generates a CMB temperature field with an injected patchy screening signal, both from theory signals. Because the input optical-depth field is known, it provides a reference against which the reconstructed signal can be tested.
 
 ### Reconstructed Signal
 
 <img src="output/reconmap.png" width="500">
+A temperature-based quadratic estimator is applied to the simulated CMB data to reconstruct the optical-depth fluctuations. The estimator uses CMB correlations induced by patchy screening to extract information about the injected signal.
 
 ### Pipeline Validation
 
 <img src="output/pipeline_verification.png" width="500">
+The cross-power spectrum between the input optical-depth field and the reconstructed field is used to test whether the pipeline recovers the injected signal.
 
 ## Installation and Usage
 
