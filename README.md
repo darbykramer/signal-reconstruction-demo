@@ -20,6 +20,11 @@ The following plots illustrate the simulated CMB data, reconstructed optical-dep
 <img src="output/inputmap.png" width="500">
 The simulation stage generates a CMB temperature field with an injected patchy screening signal, both from theory signals. Because the input optical-depth field is known, it provides a reference against which the reconstructed signal can be tested.
 
+### Simulated CMB Temperature Map
+
+<img src="output/modmap.png" width="500">
+This map shows the simulated CMB temperature field after injecting patchy screening and adding instrumental noise. It represents the observed data used as input to the reconstruction pipeline. The temperature fluctuations are shown in µK.
+
 ### Reconstructed Signal
 
 <img src="output/reconmap.png" width="500">
