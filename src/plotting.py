@@ -58,6 +58,8 @@ def bin_cl(cl):
 plt.figure()
 plt.semilogy(tau_ps, label="Input Signal Spectrum", c="orange", zorder=0)
 plt.scatter(bin_centers, -bin_cl(cross_ps), label="Binned in x out",zorder=1)
+plt.ylabel(r"$C_\ell$", fontsize=15)
+plt.xlabel(r"$\ell$", fontsize=15)
 #### There is a negative sign on the cross spectrum because the input tau signal is positive,
 #### but we implement it with a negative sign on the CMB because it removes signal. 
 #### Since we reconstruct it without the minus sign, we must correct with a minus sign.
@@ -65,4 +67,5 @@ plt.scatter(bin_centers, -bin_cl(cross_ps), label="Binned in x out",zorder=1)
 # plt.plot(recon_ps, label="Raw Reconstructed Signal", c="brown") # can plot this, but you will likely have to mess with the axes
 plt.grid()
 plt.legend()
+plt.tight_layout()
 plt.savefig(save_path + "/pipeline_verification.png", dpi=300)
