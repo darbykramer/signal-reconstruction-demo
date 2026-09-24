@@ -24,15 +24,20 @@ nside = args.nside
 
 recon_alm = hp.read_alm(sim_path + "/reconstructed_tau_alm_00001.fits") # load reconstructed tau alm
 input_alm = hp.read_alm(sim_path + "/tau_alm_00001.fits") #load input tau alm
+input_cmb = hp.read_alm(sim_path + "/modulated_cmb_alm_00001.fits") #load modulated CMB alm to plot
 
 ######## Plot the maps and save figures #######################
 recon_map = hp.alm2map(recon_alm, nside=nside)
 input_map = hp.alm2map(input_alm, nside=nside)
+mod_map = hp.alm2map(input_cmb, nside=nside)
 
-hp.mollview(input_map, title="Input Map")
+hp.mollview(input_map, title="Input τ Signal")
 plt.savefig(save_path + "/inputmap.png", dpi=300)
 
-hp.mollview(recon_map, title="Reconstructed Map")
+hp.mollview(mod_map, title="τ-Modulated CMB Simulation", unit=r"$\mu$K",cmap="RdBu_r")
+plt.savefig(save_path + "/modmap.png", dpi=300)
+
+hp.mollview(recon_map, title="Reconstructed τ Map")
 plt.savefig(save_path + "/reconmap.png", dpi=300)
 
 ######### Take the power spectra and verify that the input spectrum is reconstructed ############
