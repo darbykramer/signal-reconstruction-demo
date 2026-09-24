@@ -15,7 +15,7 @@ This project generates simulated CMB data with a known optical-depth fluctuation
 
 The following plots illustrate the simulated CMB data, reconstructed optical-depth field, and pipeline validation.
 
-### Input Simulation
+### Input τ Simulation
 
 <img src="output/inputmap.png" width="500">
 The simulation stage generates a CMB temperature field with an injected patchy screening signal, both from theory signals. Because the input optical-depth field is known, it provides a reference against which the reconstructed signal can be tested.
