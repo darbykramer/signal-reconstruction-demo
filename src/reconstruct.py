@@ -1,7 +1,7 @@
 import numpy as np
 import healpy as hp
 from pixell import curvedsky as cs
-from pytempura.norm import get_norms
+from pytempura import norm_general
 import camb
 import argparse
 
@@ -86,7 +86,12 @@ oclsnoise = {'TT' : cl_tot, 'EE': 0, 'BB': 0, 'TE': 0}
 ocls = {'TT' : ocl[0], 'EE': ocl[1], 'BB': ocl[2], 'TE': ocl[3]}
 ucls = {'TT' : cl[0], 'EE': cl[1], 'BB': cl[2], 'TE': cl[3]}
 
-Aestnoise = get_norms(['tt'],ucls,oclsnoise,rlmin,rlmax,coupling=["tau"])
+Aestnoise = {'tt': np.asarray(
+    norm_general.qtt(
+        "amp", lmax, rlmin, rlmax,
+        ucls['TT'], ucls['TT'], oclsnoise['TT']
+    )
+)[0]}
 
 ### Apply Normalization ###################################################
 
